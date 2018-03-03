@@ -4,12 +4,12 @@ import com.example.dddrestaurant.utils.Message;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-public class IdempotencyHandler<T extends Message> implements Handles<T>
+public class IdempotentHandler<T extends Message> implements Handles<T>
 {
     private final Handles<T> handler;
     private final ConcurrentHashMap<String, Boolean> messagesSeen;
 
-    public IdempotencyHandler(Handles<T> handler)
+    public IdempotentHandler(Handles<T> handler)
     {
         this.handler = handler;
         this.messagesSeen = new ConcurrentHashMap<String, Boolean>();

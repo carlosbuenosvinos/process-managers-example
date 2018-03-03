@@ -4,17 +4,12 @@ import com.example.dddrestaurant.application.CookFoodCommand;
 import com.example.dddrestaurant.domain.model.order.Order;
 import com.example.dddrestaurant.domain.model.order.OrderCooked;
 import com.example.dddrestaurant.handlers.Handles;
-import com.example.dddrestaurant.utils.Message;
 import com.example.dddrestaurant.utils.Publisher;
-import com.example.dddrestaurant.utils.Sizable;
-
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class Cook implements Handles<CookFoodCommand>, Sizable
+public class Cook implements Handles<CookFoodCommand>
 {
     private final String name;
-    private final ConcurrentHashMap<String, Boolean> messagesSeen;
     private final ConcurrentLinkedQueue<Order> ordersCooked;
     private Publisher publisher;
 
@@ -22,7 +17,6 @@ public class Cook implements Handles<CookFoodCommand>, Sizable
         this.publisher = publisher;
         this.name = name;
         this.ordersCooked = ordersCooked;
-        this.messagesSeen = new ConcurrentHashMap<String, Boolean>();
     }
 
     public void handle(CookFoodCommand message) {
@@ -41,10 +35,5 @@ public class Cook implements Handles<CookFoodCommand>, Sizable
             message.getMessageId(),
             message.order
         ));
-    }
-
-    public int size()
-    {
-        return messagesSeen.size();
     }
 }

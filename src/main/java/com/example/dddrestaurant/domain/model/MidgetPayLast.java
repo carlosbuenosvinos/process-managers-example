@@ -7,108 +7,74 @@ import com.example.dddrestaurant.application.TakePaymentCommand;
 import com.example.dddrestaurant.domain.model.cook.CookTimedOut;
 import com.example.dddrestaurant.domain.model.order.*;
 import com.example.dddrestaurant.handlers.Handles;
-import com.example.dddrestaurant.utils.Message;
 import com.example.dddrestaurant.utils.Publisher;
-
 import java.time.LocalDateTime;
 
-public class MidgetPayLast implements Handles<com.example.dddrestaurant.utils.Message>, Midget
+public class MidgetPayLast extends Midget implements Handles<com.example.dddrestaurant.utils.Message>
 {
-    private final Publisher publisher;
-
     public MidgetPayLast(Publisher publisher) {
-        this.publisher = publisher;
+        super(publisher);
     }
 
-    public void handle(com.example.dddrestaurant.utils.Message message) {
-        if (message instanceof OrderPlaced) {
-            handleOrderPlaced(message);
-        } else if(message instanceof OrderCooked) {
-            handleOrderCooked(message);
-        } else if(message instanceof OrderPriced) {
-            handleOrderPriced(message);
-        } else if(message instanceof OrderPaid) {
-            handleOrderPaid(message);
-        } else if(message instanceof CookTimedOut) {
-            handleCookTimedOut((CookTimedOut) message);
-        } else {
-//            System.out.println(message.getClass().getSimpleName() + " received, but I don't know what to do???");
-        }
-    }
-
-    private void handleCookTimedOut(CookTimedOut message) {
-        CookFoodCommand cookFoodCommand = new CookFoodCommand(
+    protected void handleCookTimedOut(CookTimedOut message) {
+        publishCookFoodCommand(new CookFoodCommand(
             message.getCausationMessageId(),
             message.getCorrelationMessageId(),
             message.getMessageId(),
             message.getOrder()
-        );
-
-        this.publisher.publish(cookFoodCommand);
-
-        this.publisher.publish(
-            new SendToMeInCommand(
-                LocalDateTime.now().plusNanos(5 * 1000),
-                new CookTimedOut(
-                    message.getCorrelationMessageId(),
-                    cookFoodCommand.getMessageId(),
-                    message.getOrder()
-                ),
-                message.getCorrelationMessageId(),
-                cookFoodCommand.getMessageId()
-            )
-        );
+        ), message.getCorrelationMessageId(), message.getOrder());
     }
 
-    private void handleOrderPlaced(Message message) {
-        CookFoodCommand cookFoodCommand = new CookFoodCommand(
+    protected void handleOrderPlaced(OrderPlaced message) {
+        publishCookFoodCommand(new CookFoodCommand(
             message.getCorrelationMessageId(),
             message.getMessageId(),
-            ((OrderBaseEvent) message).getOrder()
-        );
+            message.getOrder()
+        ), message.getCorrelationMessageId(), message.getOrder());
+    }
 
+    private void publishCookFoodCommand(CookFoodCommand cookFoodCommand, String correlationMessageId, Order order) {
         this.publisher.publish(cookFoodCommand);
-
         this.publisher.publish(
             new SendToMeInCommand(
                 LocalDateTime.now().plusNanos(5 * 1000),
                 new CookTimedOut(
-                    message.getCorrelationMessageId(),
+                    correlationMessageId,
                     cookFoodCommand.getMessageId(),
-                    ((OrderPlaced) message).getOrder()
+                    order
                 ),
-                message.getCorrelationMessageId(),
+                correlationMessageId,
                 cookFoodCommand.getMessageId()
             )
         );
     }
 
-    private void handleOrderCooked(Message message) {
+    protected void handleOrderCooked(OrderCooked message) {
         this.publisher.publish(
-                new PriceOrderCommand(
-                        message.getCorrelationMessageId(),
-                        message.getMessageId(),
-                        ((OrderCooked) message).getOrder()
-                )
+            new PriceOrderCommand(
+                message.getCorrelationMessageId(),
+                message.getMessageId(),
+                message.getOrder()
+            )
         );
     }
 
-    private void handleOrderPriced(Message message) {
+    protected void handleOrderPriced(OrderPriced message) {
         this.publisher.publish(
-                new TakePaymentCommand(
-                        message.getCorrelationMessageId(),
-                        message.getMessageId(),
-                        ((OrderPriced) message).getOrder()
-                )
+            new TakePaymentCommand(
+                message.getCorrelationMessageId(),
+                message.getMessageId(),
+                message.getOrder()
+            )
         );
     }
 
-    private void handleOrderPaid(Message message) {
+    protected void handleOrderPaid(OrderPaid message) {
         this.publisher.publish(
             new OrderCompleted(
                 message.getCorrelationMessageId(),
                 message.getMessageId(),
-                ((OrderPaid) message).getOrder()
+                message.getOrder()
             )
         );
     }
