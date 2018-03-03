@@ -1,0 +1,28 @@
+{
+    "waiter": "Joe",
+    "tableNumber": "24",
+    "lineItems": [
+        {
+            "id": 12,
+            "name": "burger",
+            "quantity": 1,
+            "unit_price": 18.00,
+            "subtotal": 18.00
+        },
+        {
+            "id": 13,
+            "name": "fries",
+            "quantity": 2,
+            "unit_price": 3.50,
+            "subtotal": 7.00
+        }
+    ],
+    "time": "12:00:00",
+    "cookingTime": "10",
+    "cooksName": "Fred",
+    "subtotal": 25.00,
+    "tax": 5.00,
+    "total": 30.00,
+    "paid": "true",
+    "completed": "true"
+}
