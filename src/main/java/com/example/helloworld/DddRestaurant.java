@@ -39,7 +39,11 @@ public class DddRestaurant {
         );
 
         IdempotencyHandler cookers = new IdempotencyHandler(cookersMultiplexer);
-        Handles realCookers = new ScrewThingsUpDuplicationHandler(cookers, 0.2);
+        Handles realCookers =
+            new ScrewThingsUpDropHandler(
+                new ScrewThingsUpDuplicationHandler(cookers, 0.2),
+                0.2
+            );
 
         TimerService timerService = new TimerService(pubSub);
 
