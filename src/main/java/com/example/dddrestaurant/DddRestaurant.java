@@ -82,7 +82,7 @@ public class DddRestaurant {
         );
 
         IdempotentHandler idempotentMultiplexedCookers = new IdempotentHandler(cookersMultiplexer);
-        Handles realCookers = new ScrewThingsUpDropHandler(
+        Handles idempotentMultiplexedNotSoReliableCookers = new ScrewThingsUpDropHandler(
             new ScrewThingsUpDuplicationHandler(
                 idempotentMultiplexedCookers,
                 percentageOfDuplicatedMessages
@@ -95,7 +95,7 @@ public class DddRestaurant {
 
         // Subscribing Listeners
         // @TODO: every actor has to be subscribed to the Commands it understands
-        pubSub.subscribe(CookFoodCommand.class, realCookers);
+        pubSub.subscribe(CookFoodCommand.class, idempotentMultiplexedNotSoReliableCookers);
         pubSub.subscribe(PriceOrderCommand.class, assistanceManager);
         pubSub.subscribe(TakePaymentCommand.class, cashier);
         pubSub.subscribe(SendToMeInCommand.class, timerService);
@@ -129,12 +129,11 @@ public class DddRestaurant {
             // 50% of Orders will be of customers that want to pay first
             // other 50% will pay last. This is handle by a flag. The MidgetHouse contains
             // a factory that will instance it a pay first midget (PM) or pay last.
-//            if (Math.random() > 0.5) {
-//                newOrder = Order.fromJson("{\"waiter\": \"Joe\",\"payFirst\": true}");
-//            } else {
-//                newOrder = Order.fromJson("{\"waiter\": \"Joe\",\"payFirst\": false}");
-//            }
+            if (Math.random() > 0.5) {
+                newOrder = Order.fromJson("{\"waiter\": \"Joe\",\"payFirst\": true}");
+            } else {
                 newOrder = Order.fromJson("{\"waiter\": \"Joe\",\"payFirst\": false}");
+            }
 
             newOrder.changeId(String.valueOf(i));
             waiter.handle(new PlaceOrderCommand(

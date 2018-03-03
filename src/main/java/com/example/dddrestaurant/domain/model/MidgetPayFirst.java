@@ -18,6 +18,16 @@ public class MidgetPayFirst extends Midget implements Handles<Message>
         super(publisher);
     }
 
+    protected void handleOrderPlaced(OrderPlaced message) {
+        this.publisher.publish(
+            new PriceOrderCommand(
+                message.getCorrelationMessageId(),
+                message.getMessageId(),
+                message.getOrder()
+            )
+        );
+    }
+
     protected void handleCookTimedOut(CookTimedOut message) {
         CookFoodCommand cookFoodCommand = new CookFoodCommand(
             message.getCausationMessageId(),
@@ -78,16 +88,6 @@ public class MidgetPayFirst extends Midget implements Handles<Message>
     protected void handleOrderCooked(OrderCooked message) {
         this.publisher.publish(
             new OrderCompleted(
-                message.getCorrelationMessageId(),
-                message.getMessageId(),
-                message.getOrder()
-            )
-        );
-    }
-
-    protected void handleOrderPlaced(OrderPlaced message) {
-        this.publisher.publish(
-            new PriceOrderCommand(
                 message.getCorrelationMessageId(),
                 message.getMessageId(),
                 message.getOrder()
