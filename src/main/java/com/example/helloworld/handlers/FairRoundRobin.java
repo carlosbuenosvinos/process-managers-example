@@ -2,22 +2,22 @@ package com.example.helloworld.handlers;
 
 import com.example.helloworld.utils.Message;
 
-import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class FairRoundRobin<T extends Message> implements Handles<T>
 {
-    private ArrayList<ThreadedHandler<Message>> handleOrders;
+    private ConcurrentLinkedQueue<ThreadedHandler<Message>> handlers;
 
-    public FairRoundRobin(ArrayList<ThreadedHandler<Message>> handlers)
+    public FairRoundRobin(ConcurrentLinkedQueue<ThreadedHandler<Message>> handlers)
     {
-         this.handleOrders = (ArrayList<ThreadedHandler<Message>>) handlers.clone();
+        this.handlers = handlers;
     }
 
     public void handle(T message)
     {
         boolean delivered = false;
         while (!delivered) {
-            for (ThreadedHandler ho: this.handleOrders) {
+            for (ThreadedHandler ho: handlers) {
                 if (ho.size() < 5) {
                     ho.handle(message);
                     delivered = true;

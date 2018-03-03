@@ -6,16 +6,16 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class RoundRobin<T extends Message> implements Handles<T>
 {
-    private ConcurrentLinkedQueue<Handles<T>> handlers;
+    private ConcurrentLinkedQueue<Handles<Message>> handlers;
 
-    public RoundRobin(ConcurrentLinkedQueue<Handles<T>> handlers)
+    public RoundRobin(ConcurrentLinkedQueue<Handles<Message>> handlers)
     {
-        this.handlers = (ConcurrentLinkedQueue<Handles<T>>) handlers.clone();
+        this.handlers = handlers;
     }
 
     public void handle(T message)
     {
-        Handles<T> handler = this.handlers.remove();
+        Handles<Message> handler = this.handlers.remove();
         handler.handle(message);
         this.handlers.add(handler);
     }

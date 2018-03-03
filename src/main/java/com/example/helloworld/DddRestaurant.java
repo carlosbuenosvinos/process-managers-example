@@ -30,21 +30,22 @@ public class DddRestaurant {
         ThreadedHandler assistanceManager = buildAssistanceManager(pubSub);
         ThreadedHandler cashier = buildCashier(pubSub);
 
-        ArrayList<ThreadedHandler> cookersList = new ArrayList<ThreadedHandler>();
+        ConcurrentLinkedQueue<ThreadedHandler<CookFoodCommand>> cookersList = new ConcurrentLinkedQueue<ThreadedHandler<CookFoodCommand>>();
         cookersList.add(threadedCook1);
         cookersList.add(threadedCook2);
         cookersList.add(threadedCook3);
-        ThreadedHandler<CookFoodCommand> cookersMultiplexer = new ThreadedHandler<CookFoodCommand>(
-            new RoundRobin<CookFoodCommand>(cookersList)
+        ThreadedHandler cookersMultiplexer = new ThreadedHandler(
+            new FairRoundRobin(cookersList)
         );
 
         IdempotencyHandler cookers = new IdempotencyHandler(cookersMultiplexer);
+        Handles realCookers = new ScrewThingsUpDuplicationHandler(cookers, 0.2);
 
         TimerService timerService = new TimerService(pubSub);
 
         // Subscribing Listeners
         // @TODO: every actor has to be subscribed to the Commands it understands
-        pubSub.subscribe(CookFoodCommand.class, cookers);
+        pubSub.subscribe(CookFoodCommand.class, realCookers);
         pubSub.subscribe(PriceOrderCommand.class, assistanceManager);
         pubSub.subscribe(TakePaymentCommand.class, cashier);
         pubSub.subscribe(SendToMeInCommand.class, timerService);
@@ -59,8 +60,8 @@ public class DddRestaurant {
         cashier.start();
         assistanceManager.start();
         threadedCook1.start();
-//        threadedCook2.start();
-//        threadedCook3.start();
+        threadedCook2.start();
+        threadedCook3.start();
         cookersMultiplexer.start();
         threadedMidgetHouse.start();
         timerService.start();
